@@ -15,6 +15,8 @@ $usuarios= $sql->select($query);
 
 echo json_encode($usuarios);
 
+echo "novo"
+
 /*
 $con=$sql->getConn();
 $con->beginTransaction();
