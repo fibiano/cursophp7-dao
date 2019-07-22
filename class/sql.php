@@ -26,7 +26,7 @@ public function query($rawQuery,$params=array()){
 private function setParams($statement, $parameters=array()){
 
     foreach ($parameters as $key => $value) {
-        $statement->setParam($key,$value);
+        $this->setParam($statement,$key,$value);
     }
 }
 
@@ -46,12 +46,8 @@ public function select($rawQuery,$params=array())
 
 public function delete($rawQuery,$params=array()){
 
-
     $this->query($rawQuery,$params);
     echo "deletado com sucesso";
-
-
-
 
 }
 

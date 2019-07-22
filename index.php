@@ -8,14 +8,14 @@
 require_once('config.php');
 
 
-$sql= new Sql();
-$query="SELECT * FROM tb_usuarios";
+$usuario= new Usuario();
 
-$usuarios= $sql->select($query);
 
-echo json_encode($usuarios);
 
-echo "novo"
+$usuario->loadUserById(1);
+
+echo $usuario;
+
 
 /*
 $con=$sql->getConn();
