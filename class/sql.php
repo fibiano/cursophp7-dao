@@ -7,7 +7,7 @@ private $conn;
 
 public function __construct()
 {
-    $this->conn= new PDO("mysql:host=localhost;dbname=dbphp7","root","");
+    $this->conn= new PDO("mysql:host=localhost;dbname=dbphp7","root","3FqJemMp7@LV9sm");
    }
 
 
@@ -43,15 +43,6 @@ public function select($rawQuery,$params=array())
      
 
 }
-
-public function delete($rawQuery,$params=array()){
-
-    $this->query($rawQuery,$params);
-    echo "deletado com sucesso";
-
-}
-
-
 
 
 public function getConn()
