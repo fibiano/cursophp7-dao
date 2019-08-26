@@ -41,7 +41,7 @@ $diretorio= scandir($name);
 
 
 
-$data=array();
+$imagesArr=array();
 
 
 
@@ -54,14 +54,14 @@ foreach ($diretorio as $image) {
         $info['tamanho']=filesize($filename);        
         $info['modified']=date("d/m/Y H:i:s",filemtime($filename));   
         $info['url']='http://10.168.0.53:81/dao/'.str_replace("\\","/",$filename);
-       array_push($data,$info);
+       array_push($imagesArr,$info);
 
 
     }
 }
 
-if(!empty($data)){
-   // echo json_encode($data);
+if(!empty($imagesArr)){
+   //echo json_encode($imagesArr);
 }
 
 
@@ -98,12 +98,12 @@ $dados= array();
 
 foreach ($usuarios as $row) {
 
-echo "<br>";
+//echo "<br>";
 
     foreach ($row as $key => $value) {
        array_push($dados,$value);
 
-       echo $key.":".$value."<br>";       
+      // echo $key.":".$value."<br>";       
     }  
 }
  
@@ -141,124 +141,126 @@ fclose($file);
 if(!is_dir("images"))
 mkdir("images");
 
-var_dump(scandir("images"));
+
 
 foreach (scandir("images") as $item) {
     if(!in_array($item,array(".",".."))){
-        unlink("images/".$item);
+       // unlink("images/".$item);
     }
 }
 
 
-//$usuario->update("novo_2019","123457");
+//Trabalhando com leitura de arquivos
 
+$filename= "usuarios.csv";
 
-/*
-$con=$sql->getConn();
-$con->beginTransaction();
+if(file_exists($filename)){
 
-$argum=array();
-$id=6;
+$file= fopen($filename,"r");
 
-array_push($argum,$id);
+$headers=explode(",",fgets($file));
 
+$data=array();
 
+//fgets pega linha por linha
+while($row=fgets($file)){
 
-//$stmt=$sql->prepare("DELETE FROM tb_usuarios WHERE idusuario= ?");
-$query="DELETE FROM tb_usuarios WHERE idusuario in ?";
+$rowData=(explode(",",$row));
+$linha= array();
 
-echo $sql->delete($query,$argum);
+for($i=0;$i < count($headers);$i++){
 
+    $linha[$headers[$i]]=$rowData[$i];
 
-//$login="jose";
-//$password="123";
-
-/*
-//$stmt->bindParam(":LOGIN",$login);
-//$stmt->bindParam(":PASSWORD",$password);
-
-if($stmt->execute(array($id))){
-    ECHO "DELETADO COM SUCESSO COM O PDO";
-    //$con->rollBack();
-    $con->commit();
-    
-}else{
-    ECHO "ERRO AO DELETAR COM O PDO";
 }
 
+array_push($data,$linha);
+
+
+  
+};
+
+
+fclose($file);
+
+};
 
 
 
+$filename= "images/foto.jpg";
 
-//$con= new Sql();
+if(file_exists($filename)){
+    $base64=base64_encode(file_get_contents($filename));
+    $fileinfo= new finfo(FILEINFO_MIME_TYPE);
 
+    $mimetype=$fileinfo->file($filename);
 
-/*
-$stmt=$con->prepare("select * from tb_usuarios order by deslogin");
+    $base64encode= "data:". $mimetype .";base64,". $base64;
 
-$stmt->execute();
+//echo $base64encode;
 
-//cada linha é um array;
-$results =$stmt->fetchAll(PDO::FETCH_ASSOC);
-
-
-foreach ($results as $key => $value) {
-   foreach ($value as $arrow => $value) {
-       echo "<strong>".$arrow."</strong>:".$value."<br/>";
-   }
-   echo "============";
 }
-
-*/
-
-//$stmt=$con->prepare("INSERT INTO tb_usuarios(deslogin,dessenha) VALUES(:LOGIN,:PASSWORD)");
-//$stmt=$con->prepare("UPDATE tb_usuarios SET dessenha=:PASSWORD WHERE deslogin=?);
-//$stmt=$con->prepare("UPDATE tb_usuarios SET dessenha=:PASSWORD WHERE deslogin=:LOGIN");
-
-
-
-//Com mysqli
-//$con= new mysqli("localhost","root","","dbphp7");
-/*
-if($con->connect_error){
-    echo "Error". $con->connect_error;
-    exit;
-}
-*/
-
-
-
-//Comando para inserir no banco de dados mysql usando mysqli
-/*
-$stmt= $con->prepare("insert into tb_usuarios (deslogin,dessenha)values(?,?)");
-$login="user";
-$senha="123456";
-
-$stmt->bind_param("ss",$login,$senha);
-
-$stmt->execute();
-
-$login="root";
-$senha="1234567";
-
-$stmt->execute();
-*/
-
-
-//Fazer um select e exibir na tela 
-/*
-$result= $con->query("select * from tb_usuarios order by deslogin");
-$data= array();
-
-while($row= $result->fetch_array())
-{
-   array_push($data,$row);
-}
-
-echo json_encode($data);
-*/
-
-
 
 
 ?>
+
+<form method="POST" enctype="multipart/form-data">
+<input type="file" name="fileUpload">
+<button type="submit">Send</button>
+
+
+</form>
+
+<!--<a href="<?php echo $base64encode?>" target="_blank">Aqui</a>
+<img src="<?=$base64encode?>" alt="" width="100%" height="80%"> 
+
+--->
+
+<?php
+
+//Se tiver um metódo post enviado
+if($_SERVER['REQUEST_METHOD']==="POST"){
+
+$file=$_FILES["fileUpload"];
+
+//É possível pegar o mimetype dessa forma tambem
+$fileinfo= new finfo(FILEINFO_MIME_TYPE);
+$mimetype=$fileinfo->file($file['tmp_name']);
+
+//mas com é o upload de um arquivo, posso pegar direto
+$mimetype=$file['type'];
+var_dump($mimetype);
+
+//Se gerar algum erro, entra nesse if
+if($file['error']){
+    throw new Exception("Error:".$file["error"]);
+    
+}
+
+$dirUploads="uploads";
+
+//Criar o diretorio se não existir
+if(!is_dir($dirUploads)){
+    mkdir($dirUploads);
+}
+
+//E por fim pega da memoria e grava no disco
+if(move_uploaded_file($file['tmp_name'],$dirUploads.DIRECTORY_SEPARATOR.$file['name']))
+{
+    echo "Image salva com sucesso!";
+
+}else{
+    throw new Exception("Não foi possível realizar o download");
+    
+}
+
+
+}
+
+?>
+
+
+
+
+
+
