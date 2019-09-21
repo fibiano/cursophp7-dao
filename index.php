@@ -205,7 +205,7 @@ if(file_exists($filename)){
 ?>
 
 <form method="POST" enctype="multipart/form-data">
-<input type="file" name="fileUpload">
+<input type="file" name="fileUpload[]" multiple="multiple">
 <button type="submit">Send</button>
 
 
@@ -223,42 +223,111 @@ if($_SERVER['REQUEST_METHOD']==="POST"){
 
 $file=$_FILES["fileUpload"];
 
-//É possível pegar o mimetype dessa forma tambem
-$fileinfo= new finfo(FILEINFO_MIME_TYPE);
-$mimetype=$fileinfo->file($file['tmp_name']);
+//echo json_encode($file);
 
-//mas com é o upload de um arquivo, posso pegar direto
-$mimetype=$file['type'];
-var_dump($mimetype);
-
-//Se gerar algum erro, entra nesse if
-if($file['error']){
-    throw new Exception("Error:".$file["error"]);
-    
-}
-
+//var_dump($file);
 $dirUploads="uploads";
+
 
 //Criar o diretorio se não existir
 if(!is_dir($dirUploads)){
     mkdir($dirUploads);
 }
 
-//E por fim pega da memoria e grava no disco
-if(move_uploaded_file($file['tmp_name'],$dirUploads.DIRECTORY_SEPARATOR.$file['name']))
+
+for($controle=0;$controle< count($file['name']);$controle++){
+
+ $destino=$dirUploads.DIRECTORY_SEPARATOR.$file['name'][$controle];
+
+ //Se gerar algum erro, entra nesse if
+if($file['error'][$controle]){
+    throw new Exception("Error:".$file["error"][$controle]);
+    
+}
+
+    //E por fim pega da memoria e grava no disco
+if(move_uploaded_file($file['tmp_name'][$controle],$destino))
 {
-    echo "Image salva com sucesso!";
+   // echo "Image salva com sucesso!";
 
 }else{
     throw new Exception("Não foi possível realizar o download");
     
 }
 
+//mas com é o upload de um arquivo, posso pegar direto
+//$mimetype=$file['type'][$controle];
+
 
 }
 
+//É possível pegar o mimetype dessa forma tambem
+//$fileinfo= new finfo(FILEINFO_MIME_TYPE);
+//$mimetype=$fileinfo->file($file['tmp_name']);
+
+
+
+}
+
+//Fazer download de arquivo
+$link="https://www.google.com/images/branding/googlelogo/2x/googlelogo_color_272x92dp.png";
+
+$content= file_get_contents($link);
+
+//Transforma em array
+$parse= parse_url($link);
+
+//var_dump($parse);
+
+$basename=basename($parse['path']);
+$file= fopen($basename,"w+");
+fwrite($file,$content);
+
+fclose($file);
+
+
+$dir1="folder_01";
+$dir2="folder_02";
+
+if(!is_dir($dir1)) mkdir($dir1);
+if(!is_dir($dir2)) mkdir($dir2);
+
+$filename=DIRECTORY_SEPARATOR."teste.txt";
+
+if(!file_exists($dir1.$filename)){
+
+    $file=fopen($dir1.$filename,"w+");
+    fwrite($file,date("Y-m-d H:i:s"));
+    fclose(($file));    
+}
+
+rename($dir1.$filename,$dir2.$filename);
+
+
+//Curl
+$cep="04578000";
+$link="https://viacep.com.br/ws/$cep/json";
+
+$ch= curl_init($link);
+
+curl_setopt($ch,CURLOPT_RETURNTRANSFER,1);
+curl_setopt($ch,CURLOPT_SSL_VERIFYPEER,0);
+
+
+$response= curl_exec($ch);
+curl_close($ch);
+
+$data=json_decode($response,true);
+
+// print_r($data->cep); 
+print_r($data['cep']); 
+
+//echo $response;
+
+
 ?>
 
+<!--<img src="<?=$basename?>">-->
 
 
 
